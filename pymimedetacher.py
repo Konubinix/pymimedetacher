@@ -98,6 +98,8 @@ def detach(msg, key, outmailboxpath, mbox):
                 fp = open(os.path.join(outpath, filename), 'wb')
                 fp.write(part.get_payload(decode=1) or "")
                 fp.close()
+            else:
+                print("Not saving attachment, use -s to save them")
             outmessage = '    ATTACHMENT=%s\n    saved into\n    OUTPATH=%s' %(filename,outpath[len(OUTPATH):]+filename)
             if options.del_attach:
                 # rewrite header and delete attachment in payload

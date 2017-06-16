@@ -74,43 +74,43 @@ def detach(msg, key, outmailboxpath, mbox):
     """
     print '-----'
     for part in msg.walk():
-            content_maintype = part.get_content_maintype()
-            if (content_maintype != 'text') & (content_maintype != 'multipart'):
-                filename = part.get_filename()
-                if options.verbose:
-                    print '   Content-Disposition  : ', part.get('Content-Disposition')
-                    print '   maintytpe            : ',part.get_content_maintype()
-                print '    %s : %s' % (part.get_content_type(),filename)
-                outpath = outmailboxpath+key+'/'
-                try:
-                    os.makedirs(outpath)
-                except OSError:
-                    if not os.path.isdir(outpath):
-                        raise
-                if filename is None:
-                    import tempfile
-                    fp = tempfile.NamedTemporaryFile(dir=outpath,
-                                                     delete=False)
-                    filename = os.path.basename(fp.name)
-                    print("Computed the filename {}".format(fp.name))
-                    fp.close()
+        content_maintype = part.get_content_maintype()
+        if (content_maintype != 'text') & (content_maintype != 'multipart'):
+            filename = part.get_filename()
+            if options.verbose:
+                print '   Content-Disposition  : ', part.get('Content-Disposition')
+                print '   maintytpe            : ',part.get_content_maintype()
+            print '    %s : %s' % (part.get_content_type(),filename)
+            outpath = outmailboxpath+key+'/'
+            try:
+                os.makedirs(outpath)
+            except OSError:
+                if not os.path.isdir(outpath):
+                    raise
+            if filename is None:
+                import tempfile
+                fp = tempfile.NamedTemporaryFile(dir=outpath,
+                                                 delete=False)
+                filename = os.path.basename(fp.name)
+                print("Computed the filename {}".format(fp.name))
+                fp.close()
 
-                if options.save_attach:
-                    fp = open(outpath+filename, 'wb')
-                    fp.write(part.get_payload(decode=1) or "")
-                    fp.close()
-                outmessage = '    ATTACHMENT=%s\n    saved into\n    OUTPATH=%s' %(filename,outpath[len(OUTPATH):]+filename)
-                if options.del_attach:
-                    # rewrite header and delete attachment in payload
-                    for h in part.keys():
-                        del part[h]
-                    part.set_payload(outmessage)
-                    part.set_param('Content-Type','text/html; charset=ISO-8859-1')
-                    part.set_param('Content-Disposition','inline')
-                    mbox[key] = msg
-                    outmessage += " and deleted from message"
-                print outmessage
-                print '-----'
+            if options.save_attach:
+                fp = open(outpath+filename, 'wb')
+                fp.write(part.get_payload(decode=1) or "")
+                fp.close()
+            outmessage = '    ATTACHMENT=%s\n    saved into\n    OUTPATH=%s' %(filename,outpath[len(OUTPATH):]+filename)
+            if options.del_attach:
+                # rewrite header and delete attachment in payload
+                for h in part.keys():
+                    del part[h]
+                part.set_payload(outmessage)
+                part.set_param('Content-Type','text/html; charset=ISO-8859-1')
+                part.set_param('Content-Disposition','inline')
+                mbox[key] = msg
+                outmessage += " and deleted from message"
+            print outmessage
+            print '-----'
 
 # Recreate flat IMAP folder structure as directory structure
 # WARNING: If foder name contains '.' it will changed to os.sep and it will creare a new subfolder!!!

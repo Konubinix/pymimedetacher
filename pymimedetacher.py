@@ -86,6 +86,8 @@ def detach(msg, key, outmailboxpath, mbox):
             # signatures are not worth consuming a separated file
             continue
         filename = part.get_filename()
+        if filename is not None and "?" in filename:
+            filename = filename.split("?")[0]
         if options.verbose:
             print '   Content-Disposition  : ', part.get('Content-Disposition')
             print '   maintytpe            : ',part.get_content_maintype()

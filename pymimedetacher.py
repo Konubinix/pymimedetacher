@@ -106,7 +106,7 @@ def detach(msg, key, outmailboxpath, mbox):
                     part.set_payload(outmessage)
                     part.set_param('Content-Type','text/html; charset=ISO-8859-1')
                     part.set_param('Content-Disposition','inline')
-                    mbox.__setitem__(key, msg)
+                    mbox[key] = msg
                     outmessage += " and deleted from message"
                 print outmessage
                 print '-----'

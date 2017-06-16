@@ -44,7 +44,7 @@ def mylistdir(directory):
     return [x for x in filelist
             if not (x.startswith('.'))]
 
-def openmailbox(inmailboxpath,outmailboxpath):
+def openmailbox(inmailboxpath, outmailboxpath):
     """ Open a mailbox (maildir) at the given path and cycle
     on all te given emails.
     """
@@ -75,43 +75,52 @@ def detach(msg, key, outmailboxpath, mbox):
     print '-----'
     for part in msg.walk():
         content_maintype = part.get_content_maintype()
-        if content_maintype != 'multipart':
-            filename = part.get_filename()
-            if options.verbose:
-                print '   Content-Disposition  : ', part.get('Content-Disposition')
-                print '   maintytpe            : ',part.get_content_maintype()
-            print '    %s : %s' % (part.get_content_type(),filename)
-            outpath = outmailboxpath+key+'/'
-            try:
-                os.makedirs(outpath)
-            except OSError:
-                if not os.path.isdir(outpath):
-                    raise
-            if filename is None:
-                import tempfile
-                fp = tempfile.NamedTemporaryFile(dir=outpath,
-                                                 delete=False)
-                filename = os.path.basename(fp.name)
-                print("Computed the filename {}".format(fp.name))
-                fp.close()
-            if options.save_attach:
-                fp = open(os.path.join(outpath, filename), 'wb')
-                fp.write(part.get_payload(decode=1) or "")
-                fp.close()
-            else:
-                print("Not saving attachment, use -s to save them")
-            outmessage = '    ATTACHMENT=%s\n    saved into\n    OUTPATH=%s' %(filename,outpath[len(OUTPATH):]+filename)
-            if options.del_attach:
-                # rewrite header and delete attachment in payload
-                for h in part.keys():
-                    del part[h]
-                part.set_payload(outmessage)
-                part.set_param('Content-Type','text/html; charset=ISO-8859-1')
-                part.set_param('Content-Disposition','inline')
-                mbox[key] = msg
-                outmessage += " and deleted from message"
-            print outmessage
-            print '-----'
+        if content_maintype == "multipart":
+            continue
+        if content_maintype == "text":
+            # only small texts must be kept. Others are most likely disguised
+            # attachments
+            if len(part.get_payload()) < 500 * 1000:
+                continue
+        if part.get_content_type() == "application/pgp-signature":
+            # signatures are not worth consuming a separated file
+            continue
+        filename = part.get_filename()
+        if options.verbose:
+            print '   Content-Disposition  : ', part.get('Content-Disposition')
+            print '   maintytpe            : ',part.get_content_maintype()
+        print '    %s : %s' % (part.get_content_type(),filename)
+        outpath = outmailboxpath+key+'/'
+        try:
+            os.makedirs(outpath)
+        except OSError:
+            if not os.path.isdir(outpath):
+                raise
+        if filename is None:
+            import tempfile
+            fp = tempfile.NamedTemporaryFile(dir=outpath,
+                                             delete=False)
+            filename = os.path.basename(fp.name)
+            print("Computed the filename {}".format(fp.name))
+            fp.close()
+        if options.save_attach:
+            fp = open(os.path.join(outpath, filename), 'wb')
+            fp.write(part.get_payload(decode=1) or "")
+            fp.close()
+        else:
+            print("Not saving attachment, use -s to save them")
+        outmessage = '    ATTACHMENT=%s\n    saved into\n    OUTPATH=%s' %(filename,outpath[len(OUTPATH):]+filename)
+        if options.del_attach:
+            # rewrite header and delete attachment in payload
+            for h in part.keys():
+                del part[h]
+            part.set_payload(outmessage)
+            part.set_param('Content-Type','text/html; charset=ISO-8859-1')
+            part.set_param('Content-Disposition','inline')
+            mbox[key] = msg
+            outmessage += " and deleted from message"
+        print outmessage
+        print '-----'
 
 # Recreate flat IMAP folder structure as directory structure
 # WARNING: If foder name contains '.' it will changed to os.sep and it will creare a new subfolder!!!
@@ -127,5 +136,5 @@ for folder in mylistdir(PATH):
     print '  Output folder: ',folderpath
     print
     print '='*20
-    openmailbox(PATH+os.sep+folder,folderpath)
+    openmailbox(PATH+os.sep+folder, folderpath)
     print 40*'*'

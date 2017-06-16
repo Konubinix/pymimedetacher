@@ -75,7 +75,7 @@ def detach(msg, key, outmailboxpath, mbox):
     print '-----'
     for part in msg.walk():
         content_maintype = part.get_content_maintype()
-        if (content_maintype != 'text') & (content_maintype != 'multipart'):
+        if content_maintype != 'multipart':
             filename = part.get_filename()
             if options.verbose:
                 print '   Content-Disposition  : ', part.get('Content-Disposition')
@@ -96,7 +96,7 @@ def detach(msg, key, outmailboxpath, mbox):
                 fp.close()
 
             if options.save_attach:
-                fp = open(outpath+filename, 'wb')
+                fp = open(os.path.join(outpath, filename), 'wb')
                 fp.write(part.get_payload(decode=1) or "")
                 fp.close()
             outmessage = '    ATTACHMENT=%s\n    saved into\n    OUTPATH=%s' %(filename,outpath[len(OUTPATH):]+filename)

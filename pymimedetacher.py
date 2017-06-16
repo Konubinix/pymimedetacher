@@ -25,7 +25,7 @@ parser.add_option('-v', '--verbose', action="store_true",
 options, args = parser.parse_args()
 
 PATH   = os.path.expanduser(options.PATH)
-OUPATH = os.path.expanduser(options.OUTPATH)
+OUTPATH = os.path.expanduser(options.OUTPATH)
 
 print 'Options :'
 print '%20s : %s' % ('Mailbox Path', PATH)
@@ -114,6 +114,9 @@ def detach(msg, key, outmailboxpath, mbox):
 
 # Recreate flat IMAP folder structure as directory structure
 # WARNING: If foder name contains '.' it will changed to os.sep and it will creare a new subfolder!!!
+import ipdb
+ipdb.set_trace()
+
 for folder in mylistdir(PATH):
     folderpath = OUTPATH+folder.replace('.',os.sep)+os.sep
     try:

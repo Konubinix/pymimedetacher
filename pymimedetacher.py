@@ -82,21 +82,21 @@ def detach(msg, key, outmailboxpath, mbox):
                     print '   maintytpe            : ',part.get_content_maintype()
                 print '    %s : %s' % (part.get_content_type(),filename)
                 outpath = outmailboxpath+key+'/'
-                if options.save_attach:
-                    try:
-                        os.makedirs(outpath)
-                    except OSError:
-                        if not os.path.isdir(outpath):
-                            raise
+                try:
+                    os.makedirs(outpath)
+                except OSError:
+                    if not os.path.isdir(outpath):
+                        raise
+                if filename is None:
+                    import tempfile
+                    fp = tempfile.NamedTemporaryFile(dir=outpath,
+                                                     delete=False)
+                    filename = os.path.basename(fp.name)
+                    print("Computed the filename {}".format(fp.name))
+                    fp.close()
 
-                    if filename is None:
-                        import tempfile
-                        fp = tempfile.NamedTemporaryFile(dir=outpath,
-                                                         delete=False)
-                        filename = os.path.basename(fp.name)
-                        print("Will save in {}".format(fp.name))
-                    else:
-                        fp = open(outpath+filename, 'wb')
+                if options.save_attach:
+                    fp = open(outpath+filename, 'wb')
                     fp.write(part.get_payload(decode=1) or "")
                     fp.close()
                 outmessage = '    ATTACHMENT=%s\n    moved to\n    OUTPATH=%s' %(filename,outpath[len(OUTPATH):]+filename)

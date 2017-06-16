@@ -102,7 +102,7 @@ def detach(msg, key, outmailboxpath, mbox):
                 outmessage = '    ATTACHMENT=%s\n    saved into\n    OUTPATH=%s' %(filename,outpath[len(OUTPATH):]+filename)
                 if options.del_attach:
                     # rewrite header and delete attachment in payload
-                    for h in part.keys().copy():
+                    for h in part.keys():
                         del part[h]
                     part.set_payload(outmessage)
                     part.set_param('Content-Type','text/html; charset=ISO-8859-1')
@@ -114,11 +114,8 @@ def detach(msg, key, outmailboxpath, mbox):
 
 # Recreate flat IMAP folder structure as directory structure
 # WARNING: If foder name contains '.' it will changed to os.sep and it will creare a new subfolder!!!
-import ipdb
-ipdb.set_trace()
-
 for folder in mylistdir(PATH):
-    folderpath = OUTPATH+folder.replace('.',os.sep)+os.sep
+    folderpath = os.path.join(OUTPATH, folder.replace('.',os.sep)+os.sep)
     try:
         os.makedirs(folderpath)
     except OSError:

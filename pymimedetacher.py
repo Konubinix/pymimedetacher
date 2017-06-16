@@ -24,8 +24,8 @@ parser.add_option('-v', '--verbose', action="store_true",
 
 options, args = parser.parse_args()
 
-PATH   = os.path.expanduser(options.PATH)
-OUTPATH = os.path.expanduser(options.OUTPATH)
+PATH   = os.path.abspath(os.path.expanduser(options.PATH))
+OUTPATH = os.path.abspath(os.path.expanduser(options.OUTPATH))
 
 print 'Options :'
 print '%20s : %s' % ('Mailbox Path', PATH)
@@ -94,7 +94,6 @@ def detach(msg, key, outmailboxpath, mbox):
                 filename = os.path.basename(fp.name)
                 print("Computed the filename {}".format(fp.name))
                 fp.close()
-
             if options.save_attach:
                 fp = open(os.path.join(outpath, filename), 'wb')
                 fp.write(part.get_payload(decode=1) or "")

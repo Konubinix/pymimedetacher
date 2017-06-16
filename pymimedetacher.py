@@ -99,7 +99,7 @@ def detach(msg, key, outmailboxpath, mbox):
                     fp = open(outpath+filename, 'wb')
                     fp.write(part.get_payload(decode=1) or "")
                     fp.close()
-                outmessage = '    ATTACHMENT=%s\n    moved to\n    OUTPATH=%s' %(filename,outpath[len(OUTPATH):]+filename)
+                outmessage = '    ATTACHMENT=%s\n    saved into\n    OUTPATH=%s' %(filename,outpath[len(OUTPATH):]+filename)
                 if options.del_attach:
                     # rewrite header and delete attachment in payload
                     tmp = [part.__delitem__(h) for h in part.keys()]
@@ -107,6 +107,7 @@ def detach(msg, key, outmailboxpath, mbox):
                     part.set_param('Content-Type','text/html; charset=ISO-8859-1')
                     part.set_param('Content-Disposition','inline')
                     mbox.__setitem__(key, msg)
+                    outmessage += " and deleted from message"
                 print outmessage
                 print '-----'
 

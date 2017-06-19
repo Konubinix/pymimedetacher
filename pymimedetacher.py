@@ -3,6 +3,7 @@
 import mailbox
 import os
 import optparse
+import chardet
 
 # Input path with (Courier) maildir data
 PATH = os.path.expanduser('~/.mail')
@@ -86,6 +87,8 @@ def detach(msg, key, outmailboxpath, mbox):
             # signatures are not worth consuming a separated file
             continue
         filename = part.get_filename()
+        if filename is not None:
+            filename = filename.encode("ascii", errors="replace").decode("ascii")
         if filename is not None and "?" in filename:
             filename = filename.split("?")[0]
         if options.verbose:

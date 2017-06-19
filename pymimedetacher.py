@@ -103,8 +103,11 @@ def detach(msg, key, outmailboxpath, mbox):
                 raise
         if not filename:
             import tempfile
-            fp = tempfile.NamedTemporaryFile(dir=outpath,
-                                             delete=False)
+            fp = tempfile.NamedTemporaryFile(
+                dir=outpath,
+                delete=False,
+                suffix="." + part.get_content_subtype(),
+            )
             filename = os.path.basename(fp.name)
             print("Computed the filename {}".format(fp.name))
             fp.close()

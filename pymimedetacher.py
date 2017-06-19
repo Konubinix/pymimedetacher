@@ -101,7 +101,7 @@ def detach(msg, key, outmailboxpath, mbox):
         except OSError:
             if not os.path.isdir(outpath):
                 raise
-        if filename is None:
+        if not filename:
             import tempfile
             fp = tempfile.NamedTemporaryFile(dir=outpath,
                                              delete=False)

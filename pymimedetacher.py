@@ -86,6 +86,9 @@ def detach(msg, key, outmailboxpath, mbox):
         if part.get_content_type() == "application/pgp-signature":
             # signatures are not worth consuming a separated file
             continue
+        if part.get_content_type() == "multipart/signed":
+            # signatures are not worth consuming a separated file
+            continue
         filename = part.get_filename()
         if filename is not None:
             filename = filename.encode("ascii", errors="replace").decode("ascii")

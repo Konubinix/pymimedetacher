@@ -90,14 +90,21 @@ def detach(msg, key, outmailboxpath, mbox):
             # signatures are not worth consuming a separated file
             continue
         filename = part.get_filename()
-        if filename is not None:
-            filename = filename.encode("ascii", errors="replace").decode("ascii")
+        if isinstance(filename, str):
+            decodedfilename = None
+            for charset in ("utf-8", "latin-1", "ascii"):
+                try:
+                    decodedfilename = filename.decode(charset)
+                except UnicodeDecodeError:
+                    pass
+            if decodedfilename is None:
+                filename = None
         if filename is not None and "?" in filename:
             filename = filename.split("?")[0]
         if options.verbose:
             print '   Content-Disposition  : ', part.get('Content-Disposition')
             print '   maintytpe            : ',part.get_content_maintype()
-        print '    %s : %s' % (part.get_content_type(),filename)
+        print '    %s : %s' % (part.get_content_type(), filename)
         outpath = outmailboxpath+key+'/'
         try:
             os.makedirs(outpath)

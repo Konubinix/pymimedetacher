@@ -113,15 +113,15 @@ def detach(msg, key, outmailboxpath, mbox):
         filename = part.get_filename()
         if isinstance(filename, str):
             decodedfilename = None
-            for charset in ("utf-8", "latin-1", "ascii"):
+            for charset in ("latin-1", "utf-8", "ascii"):
                 try:
                     decodedfilename = filename.decode(charset)
                 except UnicodeDecodeError:
                     pass
             if decodedfilename is None:
                 filename = None
-        if filename is not None and "?" in filename:
-            filename = filename.split("?")[0]
+            else:
+                filename = decodedfilename
         if options.verbose:
             print '   Content-Disposition  : ', part.get('Content-Disposition')
             print '   maintytpe            : ',part.get_content_maintype()

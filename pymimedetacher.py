@@ -4,7 +4,10 @@ import mailbox
 import tempfile
 import os
 import optparse
+import re
 import chardet
+import quopri
+import base64
 
 # Input path with (Courier) maildir data
 PATH = os.path.expanduser('~/.mail')
@@ -28,6 +31,23 @@ options, args = parser.parse_args()
 
 PATH   = os.path.abspath(os.path.expanduser(options.PATH))
 OUTPATH = os.path.abspath(os.path.expanduser(options.OUTPATH))
+
+
+def decode(value):
+    match = re.match(
+        "^=\?(?P<encoding>[^?]+)\?(?P<method>q|b|B|Q)\?(?P<content>.+)\?=(?P<rest>.*)$",
+        value,
+    )
+    method_handlers = {
+        "q": quopri.decodestring,
+        "b": base64.decodestring,
+    }
+    if match:
+        value = method_handlers[match.group("method").lower()](
+            match.group("content").encode("utf-8")
+        ).decode(match.group("encoding")) + match.group("rest")
+    return value
+
 
 print 'Options :'
 print '%20s : %s' % ('Mailbox Path', PATH)
@@ -112,8 +132,16 @@ def detach(msg, key, outmailboxpath, mbox):
         except OSError:
             if not os.path.isdir(outpath):
                 raise
-        if filename:
-            filename = filename.replace("\n", "").replace("\r", "").replace("\l", "")
+        if filename is not None:
+            filename = decode(filename)
+            if "?" in filename:
+                filename = filename.split("?")[0]
+            filename = filename\
+                       .replace("\n", "")\
+                       .replace("\r", "")\
+                       .replace("\l", "")\
+                       .replace("/", "_")
+            filename = filename.encode("ascii", "xmlcharrefreplace").decode("ascii")
         else:
             fp = tempfile.NamedTemporaryFile(
                 dir=outpath,

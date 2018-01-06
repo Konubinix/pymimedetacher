@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import mailbox
+import tempfile
 import os
 import optparse
 import chardet
@@ -114,7 +115,6 @@ def detach(msg, key, outmailboxpath, mbox):
         if filename:
             filename = filename.replace("\n", "").replace("\r", "").replace("\l", "")
         else:
-            import tempfile
             fp = tempfile.NamedTemporaryFile(
                 dir=outpath,
                 delete=False,
@@ -124,7 +124,17 @@ def detach(msg, key, outmailboxpath, mbox):
             print("Computed the filename {}".format(fp.name))
             fp.close()
         if options.save_attach:
-            fp = open(os.path.join(outpath, filename), 'wb')
+            filepath = os.path.join(outpath, filename)
+            if os.path.exists(filepath):
+                base, ext = os.path.splitext(filename)
+                fp = tempfile.NamedTemporaryFile(
+                    dir=outpath,
+                    prefix=base,
+                    suffix=ext,
+                    delete=False
+                )
+            else:
+                fp = open(filepath, 'wb')
             fp.write(part.get_payload(decode=1) or "")
             fp.close()
         else:

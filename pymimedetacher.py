@@ -153,7 +153,7 @@ def detach(msg, key, outmailboxpath, mbox):
             fp.close()
         if options.save_attach:
             filepath = os.path.join(outpath, filename)
-            if os.path.exists(filepath):
+            if os.path.exists(filepath) or os.path.islink(filepath):
                 base, ext = os.path.splitext(filename)
                 fp = tempfile.NamedTemporaryFile(
                     dir=outpath,

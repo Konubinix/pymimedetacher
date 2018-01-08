@@ -8,6 +8,7 @@ import re
 import chardet
 import quopri
 import base64
+import hashlib
 
 # Input path with (Courier) maildir data
 PATH = os.path.expanduser('~/.mail')
@@ -94,17 +95,26 @@ def openmailbox(inmailboxpath, outmailboxpath):
         #      I retain text/plain and text/html.
         # if 'alternative' in msg.get_content_type():
         # if msg.is_multipart():
+        headers_as_str = u"\n".join([
+            u"{}={}".format(k, ensure_unicode(msg[k]))
+            for k in sorted(msg.keys())
+            # avoid custom headers, prone to be mutatable
+            if not k.lower().startswith("x-")
+        ])
+        headers_as_bytes = headers_as_str.encode("utf-8")
+        outpath = outmailboxpath + hashlib.md5(headers_as_bytes).hexdigest() + "/"
 
         print 'Key          : ',key
         print 'Subject      : ',msg.get('Subject')
+        print 'Outpath      : ',outpath
         if options.verbose:
             print 'Multip.      : ',msg.is_multipart()
             print 'Content-Type : ',msg.get('Content-Type')
             print 'Parts        : '
-        detach(msg, key, outmailboxpath, mbox)
+        detach(msg, key, outpath, mbox)
         print '='*20
 
-def detach(msg, key, outmailboxpath, mbox):
+def detach(msg, key, outpath, mbox):
     """ Cycle all the part of message,
     detach all the not text or multipart content type to outmailboxpath
     delete the header and rewrite is as a text inline message log.
@@ -130,7 +140,6 @@ def detach(msg, key, outmailboxpath, mbox):
             print '   Content-Disposition  : ', part.get('Content-Disposition')
             print '   maintytpe            : ',part.get_content_maintype()
         print '    %s : %s' % (part.get_content_type(), filename)
-        outpath = outmailboxpath+key+'/'
         try:
             os.makedirs(outpath)
         except OSError:

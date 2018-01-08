@@ -33,6 +33,21 @@ PATH   = os.path.abspath(os.path.expanduser(options.PATH))
 OUTPATH = os.path.abspath(os.path.expanduser(options.OUTPATH))
 
 
+def ensure_unicode(value):
+    """Convert a string in unicode"""
+    if isinstance(value, str):
+        decoded = None
+        charsets = ("latin-1", "utf-8", "ascii")
+        for i, charset in enumerate(charsets):
+            try:
+                return value.decode(charset)
+            except UnicodeDecodeError:
+                if i == len(charsets) - 1:
+                    raise
+    else:
+        return value
+
+
 def decode(value):
     match = re.match(
         "^=\?(?P<encoding>[^?]+)\?(?P<method>q|b|B|Q)\?(?P<content>.+)\?=(?P<rest>.*)$",
@@ -111,17 +126,6 @@ def detach(msg, key, outmailboxpath, mbox):
             # signatures are not worth consuming a separated file
             continue
         filename = part.get_filename()
-        if isinstance(filename, str):
-            decodedfilename = None
-            for charset in ("latin-1", "utf-8", "ascii"):
-                try:
-                    decodedfilename = filename.decode(charset)
-                except UnicodeDecodeError:
-                    pass
-            if decodedfilename is None:
-                filename = None
-            else:
-                filename = decodedfilename
         if options.verbose:
             print '   Content-Disposition  : ', part.get('Content-Disposition')
             print '   maintytpe            : ',part.get_content_maintype()
@@ -133,6 +137,7 @@ def detach(msg, key, outmailboxpath, mbox):
             if not os.path.isdir(outpath):
                 raise
         if filename is not None:
+            filename = ensure_unicode(filename)
             filename = decode(filename)
             if "?" in filename:
                 filename = filename.split("?")[0]

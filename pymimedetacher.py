@@ -51,7 +51,7 @@ def ensure_unicode(value):
 
 def decode(value):
     match = re.match(
-        "^=\?(?P<encoding>[^?]+)\?(?P<method>q|b|B|Q)\?(?P<content>.+)\?=(?P<rest>.*)$",
+        "^=\?(?P<encoding>[^?]+)\?(?P<method>q|b|B|Q)\?(?P<content>[^?]+)\?=(?P<rest>.*)$",
         value,
     )
     method_handlers = {
@@ -129,7 +129,7 @@ def detach(msg, key, outpath, mbox):
             # attachments
             if len(part.get_payload()) < 500 * 1000:
                 continue
-        if part.get_content_type() == "application/pgp-signature":
+        if part.get_content_type().startswith("application/pgp-"):
             # signatures are not worth consuming a separated file
             continue
         if part.get_content_type() == "multipart/signed":
@@ -208,5 +208,10 @@ for folder in mylistdir(PATH):
     print '  Output folder: ',folderpath
     print
     print '='*20
-    openmailbox(PATH+os.sep+folder, folderpath)
+    try:
+        openmailbox(PATH+os.sep+folder, folderpath)
+    except:
+        import sys
+        import ipdb
+        ipdb.post_mortem(sys.exc_info()[2])
     print 40*'*'

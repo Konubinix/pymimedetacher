@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import mailbox
 import tempfile
@@ -65,12 +65,12 @@ def decode(value):
     return value
 
 
-print 'Options :'
-print '%20s : %s' % ('Mailbox Path', PATH)
-print '%20s : %s' % ('Output Path ', OUTPATH)
-print '%20s : %s' % ('delete attachment', options.del_attach)
-print '%20s : %s' % ('save attachment', options.save_attach)
-print '%20s : %s' % ('verbose', options.save_attach)
+print('Options :')
+print('%20s : %s' % ('Mailbox Path', PATH))
+print('%20s : %s' % ('Output Path ', OUTPATH))
+print('%20s : %s' % ('delete attachment', options.del_attach))
+print('%20s : %s' % ('save attachment', options.save_attach))
+print('%20s : %s' % ('verbose', options.save_attach))
 # Useful links:
 # - MIME structure :Parsing email using Python part 2,  http://blog.magiksys.net/parsing-email-using-python-content
 # - Parse Multi-Part Email with Sub-parts using Python, http://stackoverflow.com/a/4825114/1435167
@@ -90,13 +90,13 @@ def openmailbox(inmailboxpath, outmailboxpath):
     # see > http://stackoverflow.com/a/13445253/1435167
     mbox = mailbox.Maildir(inmailboxpath, factory=None)
     # iterate all the emails in the hierarchy
-    for key, msg in mbox.iteritems():
+    for key, msg in mbox.items():
         # ToDo Skip messages without 'attachment' without parsing parts,but what are attachments?
         #      I retain text/plain and text/html.
         # if 'alternative' in msg.get_content_type():
         # if msg.is_multipart():
-        headers_as_str = u"\n".join([
-            u"{}={}".format(k, ensure_unicode(msg[k]))
+        headers_as_str = "\n".join([
+            "{}={}".format(k, msg[k])
             for k in sorted(msg.keys())
             # avoid custom headers, prone to be mutatable
             if not k.lower().startswith("x-")
@@ -104,22 +104,22 @@ def openmailbox(inmailboxpath, outmailboxpath):
         headers_as_bytes = headers_as_str.encode("utf-8")
         outpath = outmailboxpath + hashlib.md5(headers_as_bytes).hexdigest() + "/"
 
-        print 'Key          : ',key
-        print 'Subject      : ',msg.get('Subject')
-        print 'Outpath      : ',outpath
+        print('Key          : ',key)
+        print('Subject      : ',msg.get('Subject'))
+        print('Outpath      : ',outpath)
         if options.verbose:
-            print 'Multip.      : ',msg.is_multipart()
-            print 'Content-Type : ',msg.get('Content-Type')
-            print 'Parts        : '
+            print('Multip.      : ',msg.is_multipart())
+            print('Content-Type : ',msg.get('Content-Type'))
+            print('Parts        : ')
         detach(msg, key, outpath, mbox)
-        print '='*20
+        print('='*20)
 
 def detach(msg, key, outpath, mbox):
     """ Cycle all the part of message,
     detach all the not text or multipart content type to outmailboxpath
     delete the header and rewrite is as a text inline message log.
     """
-    print '-----'
+    print('-----')
     for part in msg.walk():
         content_maintype = part.get_content_maintype()
         if content_maintype == "multipart":
@@ -137,16 +137,16 @@ def detach(msg, key, outpath, mbox):
             continue
         filename = part.get_filename()
         if options.verbose:
-            print '   Content-Disposition  : ', part.get('Content-Disposition')
-            print '   maintytpe            : ',part.get_content_maintype()
-        print '    %s : %s' % (part.get_content_type(), filename)
+            print('   Content-Disposition  : ', part.get('Content-Disposition'))
+            print('   maintytpe            : ',part.get_content_maintype())
+        print('    %s : %s' % (part.get_content_type(), filename))
         try:
             os.makedirs(outpath)
         except OSError:
             if not os.path.isdir(outpath):
                 raise
         if filename is not None:
-            filename = ensure_unicode(filename)
+            filename = filename
             filename = decode(filename)
             if "?" in filename:
                 filename = filename.split("?")[0]
@@ -163,7 +163,7 @@ def detach(msg, key, outpath, mbox):
                 suffix="." + part.get_content_subtype(),
             )
             filename = os.path.basename(fp.name)
-            print("Computed the filename {}".format(fp.name))
+            print(("Computed the filename {}".format(fp.name)))
             fp.close()
         if options.save_attach:
             filepath = os.path.join(outpath, filename)
@@ -177,22 +177,22 @@ def detach(msg, key, outpath, mbox):
                 )
             else:
                 fp = open(filepath, 'wb')
-            fp.write(part.get_payload(decode=1) or "")
+            fp.write(part.get_payload(decode=1) or b"")
             fp.close()
         else:
             print("Not saving attachment, use -s to save them")
         outmessage = '    ATTACHMENT=%s\n    saved into\n    OUTPATH=%s' %(filename,outpath[len(OUTPATH):]+filename)
         if options.del_attach:
             # rewrite header and delete attachment in payload
-            for h in part.keys():
+            for h in list(part.keys()):
                 del part[h]
             part.set_payload(outmessage)
             part.set_param('Content-Type','text/html; charset=ISO-8859-1')
             part.set_param('Content-Disposition','inline')
             mbox[key] = msg
             outmessage += " and deleted from message"
-        print outmessage
-        print '-----'
+        print(outmessage)
+        print('-----')
 
 # Recreate flat IMAP folder structure as directory structure
 # WARNING: If foder name contains '.' it will changed to os.sep and it will creare a new subfolder!!!
@@ -203,15 +203,15 @@ for folder in mylistdir(PATH):
     except OSError:
         if not os.path.isdir(folderpath):
             raise
-    print
-    print 'Opening mailbox:',PATH+os.sep+folder
-    print '  Output folder: ',folderpath
-    print
-    print '='*20
+    print()
+    print('Opening mailbox:',PATH+os.sep+folder)
+    print('  Output folder: ',folderpath)
+    print()
+    print('='*20)
     try:
         openmailbox(PATH+os.sep+folder, folderpath)
     except:
         import sys
         import ipdb
         ipdb.post_mortem(sys.exc_info()[2])
-    print 40*'*'
+    print(40*'*')
